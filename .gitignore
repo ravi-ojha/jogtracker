@@ -1,1 +1,2 @@
-.tt_venv/*
+tt_venv/*
+*.pyc
