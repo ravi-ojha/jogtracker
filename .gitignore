@@ -1,2 +1,3 @@
 tt_venv/*
 *.pyc
+node_modules/

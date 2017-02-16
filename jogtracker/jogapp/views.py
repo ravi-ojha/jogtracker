@@ -3,6 +3,8 @@ Views that render the page
 """
 from django.http import HttpResponse
 from django.http import Http404
+from django.shortcuts import render
+
 from jogapp.models import Jog
 from jogapp.serializers import JogSerializer
 from rest_framework import status
@@ -15,7 +17,8 @@ def index(request):
     """
     Home page
     """
-    return HttpResponse("Watch this space for Jogging app")
+    template = 'jogapp/index.html'
+    return render(request, template, {})
 
 
 class JSONResponse(HttpResponse):
@@ -44,6 +47,7 @@ class JogView(APIView):
 
         If jog instance is found then
         {
+            "id": 1,
             "user_id": 1,
             "timestamp": "Feb 15, 2017",
             "duration": 600, # In seconds
@@ -61,6 +65,7 @@ class JogView(APIView):
         jog = self.get_or_404(pk)
         serializer = JogSerializer(jog)
         data = serializer.data
+        data['id'] = jog.id
         data['duration_hrs'] = data['duration']/float(3600)
         data['distance_kms'] = data['distance']/float(1000)
         data['average_speed'] = data['distance_kms']/float(data['duration_hrs'])
@@ -106,6 +111,7 @@ class UserJogs(APIView):
         If jog instances are found then
         [
             {
+                "id": 1,
                 "user_id": 1,
                 "timestamp": "Feb 15, 2017",
                 "duration": 600, # In seconds
@@ -127,6 +133,7 @@ class UserJogs(APIView):
         for jog in jogs:
             serializer = JogSerializer(jog)
             data = serializer.data
+            data['id'] = jog.id
             data['duration_hrs'] = data['duration']/float(3600)
             data['distance_kms'] = data['distance']/float(1000)
             data['average_speed'] = data['distance_kms']/float(data['duration_hrs'])
