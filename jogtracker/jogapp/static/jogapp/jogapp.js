@@ -61,7 +61,7 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	_reactDom2.default.render(_react2.default.createElement(_components.CommentSection, null), document.getElementById('root-container'));
+	_reactDom2.default.render(_react2.default.createElement(_components.CommentSection, { user_id: user_id }), document.getElementById('root-container'));
 
 /***/ },
 /* 1 */
@@ -22100,7 +22100,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-
+	            var url = '/user-jogs/' + this.props.user_id + '/';
 	            return _react2.default.createElement(
 	                'div',
 	                { className: 'main-root-div' },
@@ -22176,7 +22176,7 @@
 	                    _react2.default.createElement(
 	                        'div',
 	                        { className: 'jog-list' },
-	                        _react2.default.createElement(JogTable, { url: '/user-jogs/1/' })
+	                        _react2.default.createElement(JogTable, { url: url })
 	                    )
 	                )
 	            );

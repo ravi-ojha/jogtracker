@@ -32,7 +32,7 @@ export class CommentSection extends React.Component {
     }
 
     render() {
-
+        let url = `/user-jogs/${this.props.user_id}/`;
         return (
             <div className="main-root-div">
                 <nav className="navigation">
@@ -61,7 +61,7 @@ export class CommentSection extends React.Component {
                 </div>
                 <div className="body">
                     <div className="jog-list">
-                        <JogTable url='/user-jogs/1/' />
+                        <JogTable url={url} />
                     </div>
                 </div>
             </div>
