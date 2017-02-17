@@ -33,10 +33,13 @@ export class CommentSection extends React.Component {
         super();
 
         this.state = {
-            myjogs: true,
-            manageUsers: false,
-            manageApp: false,
+            activeTab: 'myJogs',
         };
+        this.handleClick = this._handleClick.bind(this);
+    }
+    _handleClick(e) {
+        let tab = e.target.getAttribute('data-id');
+        this.setState({activeTab: tab});
     }
 
     render() {
@@ -51,13 +54,13 @@ export class CommentSection extends React.Component {
                         </a>
                         <ul className="navigation-list float-right">
                             <li className="navigation-item">
-                                <a className="navigation-link" href="#my-jogs">My Jogs</a>
+                                <a className="navigation-link" href="#" data-id='myJogs' onClick={this.handleClick}>My Jogs</a>
                             </li>
                             <li className="navigation-item">
-                                <a className="navigation-link" href="#manage-users">Manage Users</a>
+                                <a className="navigation-link" href="#" data-id='manageUsers' onClick={this.handleClick}>Manage Users</a>
                             </li>
                             <li className="navigation-item">
-                                <a className="navigation-link" href="#manage-app-data">Manage App Data</a>
+                                <a className="navigation-link" href="#" data-id='manageApp' onClick={this.handleClick}>Manage App Data</a>
                             </li>
                         </ul>
                     </section>
@@ -68,11 +71,30 @@ export class CommentSection extends React.Component {
                         <p> Helps you track your jogging activities and analyze stats </p>
                     </section>
                 </div>
-                <div className="body">
-                    <div className="jog-list">
-                        <JogTable getUrl={getUrl} postUrl={postUrl} user_id={this.props.user_id}/>
+                {
+                    this.state.activeTab === 'myJogs' &&
+                    <div className="body">
+                        <div className="jog-list">
+                            <JogTable getUrl={getUrl} postUrl={postUrl} user_id={this.props.user_id}/>
+                        </div>
                     </div>
-                </div>
+                }
+                {
+                    this.state.activeTab === 'manageUsers' &&
+                    <div className="body">
+                        <div className="jog-list">
+                            Watch this space for User Management
+                        </div>
+                    </div>
+                }
+                {
+                    this.state.activeTab === 'manageApp' &&
+                    <div className="body">
+                        <div className="jog-list">
+                            Watch this space for App Data Management
+                        </div>
+                    </div>
+                }
                 <Alert stack={{limit: 3}} />
             </div>
         );

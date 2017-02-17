@@ -22110,14 +22110,19 @@
 	        var _this = _possibleConstructorReturn(this, (CommentSection.__proto__ || Object.getPrototypeOf(CommentSection)).call(this));
 
 	        _this.state = {
-	            myjogs: true,
-	            manageUsers: false,
-	            manageApp: false
+	            activeTab: 'myJogs'
 	        };
+	        _this.handleClick = _this._handleClick.bind(_this);
 	        return _this;
 	    }
 
 	    _createClass(CommentSection, [{
+	        key: '_handleClick',
+	        value: function _handleClick(e) {
+	            var tab = e.target.getAttribute('data-id');
+	            this.setState({ activeTab: tab });
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            var getUrl = '/user-jogs/' + this.props.user_id + '/';
@@ -22148,7 +22153,7 @@
 	                                { className: 'navigation-item' },
 	                                _react2.default.createElement(
 	                                    'a',
-	                                    { className: 'navigation-link', href: '#my-jogs' },
+	                                    { className: 'navigation-link', href: '#', 'data-id': 'myJogs', onClick: this.handleClick },
 	                                    'My Jogs'
 	                                )
 	                            ),
@@ -22157,7 +22162,7 @@
 	                                { className: 'navigation-item' },
 	                                _react2.default.createElement(
 	                                    'a',
-	                                    { className: 'navigation-link', href: '#manage-users' },
+	                                    { className: 'navigation-link', href: '#', 'data-id': 'manageUsers', onClick: this.handleClick },
 	                                    'Manage Users'
 	                                )
 	                            ),
@@ -22166,7 +22171,7 @@
 	                                { className: 'navigation-item' },
 	                                _react2.default.createElement(
 	                                    'a',
-	                                    { className: 'navigation-link', href: '#manage-app-data' },
+	                                    { className: 'navigation-link', href: '#', 'data-id': 'manageApp', onClick: this.handleClick },
 	                                    'Manage App Data'
 	                                )
 	                            )
@@ -22191,13 +22196,31 @@
 	                        )
 	                    )
 	                ),
-	                _react2.default.createElement(
+	                this.state.activeTab === 'myJogs' && _react2.default.createElement(
 	                    'div',
 	                    { className: 'body' },
 	                    _react2.default.createElement(
 	                        'div',
 	                        { className: 'jog-list' },
 	                        _react2.default.createElement(JogTable, { getUrl: getUrl, postUrl: postUrl, user_id: this.props.user_id })
+	                    )
+	                ),
+	                this.state.activeTab === 'manageUsers' && _react2.default.createElement(
+	                    'div',
+	                    { className: 'body' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'jog-list' },
+	                        'Watch this space for User Management'
+	                    )
+	                ),
+	                this.state.activeTab === 'manageApp' && _react2.default.createElement(
+	                    'div',
+	                    { className: 'body' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'jog-list' },
+	                        'Watch this space for App Data Management'
 	                    )
 	                ),
 	                _react2.default.createElement(_reactSAlert2.default, { stack: { limit: 3 } })
