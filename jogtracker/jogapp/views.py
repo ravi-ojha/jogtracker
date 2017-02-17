@@ -1,6 +1,8 @@
 """
 Views that render the page
 """
+import datetime
+
 from django.http import HttpResponse
 from django.http import Http404
 from django.shortcuts import render
@@ -66,15 +68,15 @@ class JogView(APIView):
         serializer = JogSerializer(jog)
         data = serializer.data
         data['id'] = jog.id
-        data['duration_hrs'] = data['duration']/float(3600)
+        data['duration_hrs'] = str(datetime.timedelta(seconds=data['duration']))
         data['distance_kms'] = data['distance']/float(1000)
-        data['average_speed'] = data['distance_kms']/float(data['duration_hrs'])
-        data['duration_hrs'] = '%.2f' % data['duration_hrs']
-        data['distance_kms'] = '%.2f' % data['distance_kms']
-        data['average_speed'] = '%.2f' % data['average_speed']
+        data['average_speed'] = data['distance_kms']/(data['duration']/float(3600))
+        data['distance_kms'] = '%.1f km' % data['distance_kms']
+        data['average_speed'] = '%.1f kmph' % data['average_speed']
         return Response(data)
 
     def post(self, request, format=None):
+        print request.data, "@"*20
         serializer = JogSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -102,7 +104,7 @@ class UserJogs(APIView):
     Retrieve multiple instances of jogs for a user
     """
     def get_user_jogs(self, user_id):
-        return Jog.objects.filter(user_id=user_id)
+        return Jog.objects.filter(user_id=user_id).order_by('-timestamp')
 
     def get(self, request, user_id, format=None):
         """
@@ -134,11 +136,10 @@ class UserJogs(APIView):
             serializer = JogSerializer(jog)
             data = serializer.data
             data['id'] = jog.id
-            data['duration_hrs'] = data['duration']/float(3600)
+            data['duration_hrs'] = str(datetime.timedelta(seconds=data['duration']))
             data['distance_kms'] = data['distance']/float(1000)
-            data['average_speed'] = data['distance_kms']/float(data['duration_hrs'])
-            data['duration_hrs'] = '%.2f' % data['duration_hrs']
-            data['distance_kms'] = '%.2f' % data['distance_kms']
-            data['average_speed'] = '%.2f' % data['average_speed']
+            data['average_speed'] = data['distance_kms']/(data['duration']/float(3600))
+            data['distance_kms'] = '%.1f km' % data['distance_kms']
+            data['average_speed'] = '%.1f kmph' % data['average_speed']
             jogs_list.append(data)
         return Response(jogs_list)
