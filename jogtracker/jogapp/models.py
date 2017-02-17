@@ -23,7 +23,7 @@ class Jog(models.Model):
     # User who created this jogging entry
     user = models.ForeignKey(User, related_name='jogs')
     # Date and Time of the jogging session
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField()
     # Time taken by the user for the jogging session in seconds
     duration = models.IntegerField()
     # Distance traveled by user during the jogging session in meters

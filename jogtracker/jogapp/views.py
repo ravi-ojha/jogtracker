@@ -37,6 +37,7 @@ class JogView(APIView):
     """
     Create, retrieve, update or delete a jog instance.
     """
+
     def get_or_404(self, pk):
         try:
             return Jog.objects.get(pk=pk)
@@ -67,7 +68,7 @@ class JogView(APIView):
         jog = self.get_or_404(pk)
         serializer = JogSerializer(jog)
         data = serializer.data
-        data['id'] = jog.id
+        data['jog_id'] = jog.id
         data['duration_hrs'] = str(datetime.timedelta(seconds=data['duration']))
         data['distance_kms'] = data['distance']/float(1000)
         data['average_speed'] = data['distance_kms']/(data['duration']/float(3600))
@@ -135,7 +136,7 @@ class UserJogs(APIView):
         for jog in jogs:
             serializer = JogSerializer(jog)
             data = serializer.data
-            data['id'] = jog.id
+            data['jog_id'] = jog.id
             data['duration_hrs'] = str(datetime.timedelta(seconds=data['duration']))
             data['distance_kms'] = data['distance']/float(1000)
             data['average_speed'] = data['distance_kms']/(data['duration']/float(3600))

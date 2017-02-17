@@ -390,12 +390,15 @@ blockquote, dl, figure, form, ol, p, pre, table, ul {
 }
 table {
   border-spacing: 0;
-  width: 100%;
+  width: 80%;
+  margin: auto;
+  transition: left 0.3s ease-out;
 }
 td, th {
   border-bottom: 0.1rem solid #e1e1e1;
   padding: 1.2rem 1.5rem;
-  text-align: left;
+  text-align: center;
+  transition: left 0.3s ease-out;
 }
 td:first-child, th:first-child {
   padding-left: 0;
@@ -456,11 +459,13 @@ img {
 .float-right {
   float: right;
 }
+.jog-list {
+  margin-bottom: 10em;
+}
 .jog-form {
   text-align: center;
 }
 .jog-form .input-field {
-  max-width: 20%;
   display: inline-block;
   margin-right: 2rem;
 }
@@ -913,4 +918,17 @@ img {
   height: 1rem;
   position: relative;
   width: 100%;
+}
+
+
+.margin-left-5 {
+  margin-left: 5px;
+}
+.icon {
+  color:#d1d1d1;
+  cursor: pointer;
+}
+.icon:hover{
+  color:#969696;
+  cursor: pointer;
 }

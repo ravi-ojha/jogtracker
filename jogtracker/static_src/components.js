@@ -4,6 +4,10 @@ import jQuery from 'jquery';
 import moment from 'moment';
 import DatePicker from 'react-datepicker';
 import InputRange from 'react-input-range';
+import {ModalContainer, ModalDialog} from 'react-modal-dialog';
+import Alert from 'react-s-alert';
+
+import 'react-s-alert/dist/s-alert-default.css';
 
 
 function getCookie(name) {
@@ -29,7 +33,9 @@ export class CommentSection extends React.Component {
         super();
 
         this.state = {
-
+            myjogs: true,
+            manageUsers: false,
+            manageApp: false,
         };
     }
 
@@ -67,20 +73,71 @@ export class CommentSection extends React.Component {
                         <JogTable getUrl={getUrl} postUrl={postUrl} user_id={this.props.user_id}/>
                     </div>
                 </div>
+                <Alert stack={{limit: 3}} />
             </div>
         );
     }
 }
 
 
+class EditJogElement extends React.Component {
+    constructor() {
+        super();
+
+        this.state = {
+            isShowingModal: false,
+        };
+        this.handleClick = this._handleClick.bind(this);
+        this.handleClose = this._handleClose.bind(this);
+    }
+    _handleClick() {
+        this.setState({isShowingModal: true});
+    }
+    _handleClose() {
+        this.setState({isShowingModal: false});
+    }
+    render() {
+        let jog_date = moment().set({'year': 2017, 'month': 1, 'date': 18});
+        return (
+            <i className="icon ion-edit" data-id={this.props.jog_id} onClick={this.handleClick}>
+            {
+                this.state.isShowingModal &&
+                <ModalContainer>
+                  <ModalDialog>
+                    <JogEntryForm
+                        edit={true}
+                        jog_id={this.props.data.jog_id}
+                        onJogEditSubmit={this.props.onJogEditSubmit}
+                        user_id={this.props.data.user_id}
+                        distance={this.props.data.distance/1000}
+                        duration={this.props.data.duration/60}
+                        timestamp={jog_date}
+                        closeModal={this.handleClose}
+                    />
+                  </ModalDialog>
+                </ModalContainer>
+            }
+            </i>
+        );
+    }
+}
+
 class JogElement extends React.Component {
+
     render() {
         return (
             <tr>
-                <td>{this.props.timestamp}</td>
-                <td>{this.props.distance_kms}</td>
-                <td>{this.props.duration_hrs}</td>
-                <td>{this.props.average_speed}</td>
+                <td>{this.props.data.timestamp}</td>
+                <td>{this.props.data.distance_kms}</td>
+                <td>{this.props.data.duration_hrs}</td>
+                <td>{this.props.data.average_speed}</td>
+                <td>
+                    <EditJogElement
+                        data={this.props.data}
+                        onJogEditSubmit={this.props.onJogEditSubmit}
+                    />
+                    <i className="icon ion-close-circled margin-left-5" data-id={this.props.data.jog_id} onClick={this.props.jogDelete}></i>
+                </td>
             </tr>
         );
     }
@@ -97,6 +154,8 @@ class JogTable extends React.Component {
 
         this.loadJogsFromServer = this._loadJogsFromServer.bind(this);
         this.handleJogSubmit = this._handleJogSubmit.bind(this);
+        this.handleJogDelete = this._handleJogDelete.bind(this);
+        this.handleJogEditSubmit = this._handleJogEditSubmit.bind(this);
     }
 
     _handleJogSubmit(jog) {
@@ -108,9 +167,52 @@ class JogTable extends React.Component {
             type: 'POST',
             data: jog,
             success: function(jogList) {
+                Alert.success('Jog entry added', {position: 'bottom-left'});
                 this.loadJogsFromServer();
             }.bind(this),
             error: function(xhr, status, err) {
+                Alert.error('Please try again later', {position: 'bottom-left'});
+                console.error(this.props.postUrl, status, err.toString());
+            }.bind(this)
+        });
+    }
+
+    _handleJogDelete(e) {
+        let jog_id = e.target.getAttribute('data-id');
+        jQuery.ajax({
+            url: `/jog/${jog_id}/`,
+            dataType: 'json',
+            type: 'DELETE',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }.bind(this),
+            success: function(jogList) {
+                Alert.success('Jog entry deleted', {position: 'bottom-left'});
+                this.loadJogsFromServer();
+            }.bind(this),
+            error: function(xhr, status, err) {
+                Alert.error('Please try again later', {position: 'bottom-left'});
+                console.error(this.props.postUrl, status, err.toString());
+            }.bind(this)
+        });
+    }
+
+    _handleJogEditSubmit(jog) {
+        console.log(jog);
+        jQuery.ajax({
+            url: `/jog/${jog.jog_id}/`,
+            dataType: 'json',
+            type: 'PUT',
+            data: jog,
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }.bind(this),
+            success: function(jogList) {
+                Alert.success('Jog entry updated', {position: 'bottom-left'});
+                this.loadJogsFromServer();
+            }.bind(this),
+            error: function(xhr, status, err) {
+                Alert.error('Please try again later', {position: 'bottom-left'});
                 console.error(this.props.postUrl, status, err.toString());
             }.bind(this)
         });
@@ -140,20 +242,22 @@ class JogTable extends React.Component {
         }
         let jogList = this.state.jogList.map((jog) => (
             <JogElement
-                timestamp={jog.timestamp}
-                distance_kms={jog.distance_kms}
-                duration_hrs={jog.duration_hrs}
-                average_speed={jog.average_speed}
-                key={jog.id} />
+                key={jog.jog_id}
+                jogDelete={this.handleJogDelete}
+                onJogEditSubmit={this.handleJogEditSubmit}
+                data={jog}
+            />
         ));
         return (
             <div className="jog-list-and-form">
                 <JogEntryForm
+                    edit={false}
                     onJogSubmit={this.handleJogSubmit}
+                    onJogEditSubmit={this.handleJogEditSubmit}
                     user_id={this.props.user_id}
                     timestamp={moment()}
                     distance=''
-                    duration={10}
+                    duration={30}
                 />
                 <table>
                     <thead>
@@ -162,6 +266,7 @@ class JogTable extends React.Component {
                             <th>Distance</th>
                             <th>Duration</th>
                             <th>Average Speed</th>
+                            <th> </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -180,6 +285,7 @@ class JogEntryForm extends React.Component {
         super(props);
 
         this.state = {
+            editing: this.props.edit,
             user_id: this.props.user_id,
             timestamp: this.props.timestamp,
             distance: this.props.distance,
@@ -190,6 +296,7 @@ class JogEntryForm extends React.Component {
         this.handleDistanceChange = this._handleDistanceChange.bind(this);
         this.handleDurationChange = this._handleDurationChange.bind(this);
         this.handleSubmit = this._handleSubmit.bind(this);
+        this.handleEditSubmit = this._handleEditSubmit.bind(this);
         this.formatDurationLabel = this._formatDurationLabel.bind(this);
     }
 
@@ -215,6 +322,31 @@ class JogEntryForm extends React.Component {
         return `${e} mins`;
     }
 
+    _handleEditSubmit(e) {
+        e.preventDefault();
+        let user_id = this.state.user_id;
+        let timestamp_obj = this.state.timestamp;
+        // We expect distance in meters in backend
+        let distance = this.state.distance*1000;
+        // Duration is minutes right now, we expect in seconds
+        let duration = this.state.duration*60;
+        let jog_id = this.props.jog_id;
+        if (!timestamp_obj) {
+            Alert.error('Please choose a date', {position: 'bottom-left'});
+            return;
+        }
+        if (!distance) {
+            Alert.error('Please enter the distance covered', {position: 'bottom-left'});
+            return;
+        }
+        if (!duration) {
+            return;
+        }
+        let timestamp = `${timestamp_obj.get('year')}-${timestamp_obj.get('month')+1}-${timestamp_obj.get('date')}T${timestamp_obj.get('hour')}:${timestamp_obj.get('minute')}`;
+        this.props.onJogEditSubmit({jog_id, user_id, timestamp, distance, duration});
+        this.props.closeModal();
+    }
+
     _handleSubmit(e) {
         e.preventDefault();
         let user_id = this.state.user_id;
@@ -224,9 +356,11 @@ class JogEntryForm extends React.Component {
         // Duration is minutes right now, we expect in seconds
         let duration = this.state.duration*60;
         if (!timestamp_obj) {
+            Alert.error('Please choose a date', {position: 'bottom-left'});
             return;
         }
         if (!distance) {
+            Alert.error('Please enter the distance covered', {position: 'bottom-left'});
             return;
         }
         if (!duration) {
@@ -234,12 +368,12 @@ class JogEntryForm extends React.Component {
         }
         let timestamp = `${timestamp_obj.get('year')}-${timestamp_obj.get('month')+1}-${timestamp_obj.get('date')}T${timestamp_obj.get('hour')}:${timestamp_obj.get('minute')}`;
         this.props.onJogSubmit({user_id, timestamp, distance, duration});
-        this.setState({distance: '', duration: 10});
+        this.setState({distance: '', duration: 30});
     }
 
     render() {
         return (
-            <form className="jog-form" onSubmit={this.handleSubmit}>
+            <form className="jog-form" onSubmit={this.state.editing ? this.handleEditSubmit : this.handleSubmit}>
                 <div className="input-field">
                     <label> Jogging Date </label>
                     <DatePicker
@@ -266,7 +400,7 @@ class JogEntryForm extends React.Component {
                         onChange={this.handleDurationChange}
                     />
                 </div>
-                <input type="submit" value="Save" />
+                {this.state.editing ? <div> <input type="submit" value="Update" /> <a onClick={this.props.closeModal}> Cancel </a></div> : <input type="submit" value="Save" />}
             </form>
         );
     }
