@@ -13,7 +13,11 @@
         <main id="root-container" class="root-container">
         </main>
         <script type="text/javascript">
+            {% if request.user.is_authenticated %}
             var user_id = {{ request.user.id }};
+            {% else %}
+            var user_id = '';
+            {% endif %}
         </script>
         <script type="text/javascript" src="./static/jogapp/jogapp.js"></script>
     </body>

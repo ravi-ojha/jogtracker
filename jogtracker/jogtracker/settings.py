@@ -35,11 +35,17 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
     # Django Rest Framework
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_auth',
+    'allauth',
+    'allauth.account',
+    'rest_auth.registration',
     'jogapp',
 ]
 
@@ -124,10 +130,15 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-# REST_FRAMEWORK = {
-#     # Use Django's standard `django.contrib.auth` permissions,
-#     # or allow read-only access for unauthenticated users.
-#     'DEFAULT_PERMISSION_CLASSES': [
-#         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-#     ]
-# }
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+
+    ]
+}
+
+SITE_ID = 1
+
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'

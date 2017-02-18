@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {CommentSection} from './components.js';
+import {JogApp} from './components.js';
 
 
 ReactDOM.render(
-  <CommentSection user_id={user_id} />,
+  <JogApp />,
   document.getElementById('root-container')
 );

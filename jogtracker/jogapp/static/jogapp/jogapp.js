@@ -61,7 +61,7 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	_reactDom2.default.render(_react2.default.createElement(_components.CommentSection, { user_id: user_id }), document.getElementById('root-container'));
+	_reactDom2.default.render(_react2.default.createElement(_components.JogApp, null), document.getElementById('root-container'));
 
 /***/ },
 /* 1 */
@@ -22040,7 +22040,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.CommentSection = undefined;
+	exports.JogApp = undefined;
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -22074,7 +22074,9 @@
 
 	var _reactSAlert2 = _interopRequireDefault(_reactSAlert);
 
-	__webpack_require__(/*! react-s-alert/dist/s-alert-default.css */ 371);
+	var _rest_auth = __webpack_require__(/*! ./rest_auth.js */ 371);
+
+	__webpack_require__(/*! react-s-alert/dist/s-alert-default.css */ 372);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -22099,140 +22101,279 @@
 	    }
 	    return cookieValue;
 	}
-	var csrftoken = getCookie('csrftoken');
 
-	var CommentSection = exports.CommentSection = function (_React$Component) {
-	    _inherits(CommentSection, _React$Component);
+	var JogApp = exports.JogApp = function (_React$Component) {
+	    _inherits(JogApp, _React$Component);
 
-	    function CommentSection() {
-	        _classCallCheck(this, CommentSection);
+	    function JogApp() {
+	        _classCallCheck(this, JogApp);
 
-	        var _this = _possibleConstructorReturn(this, (CommentSection.__proto__ || Object.getPrototypeOf(CommentSection)).call(this));
+	        var _this = _possibleConstructorReturn(this, (JogApp.__proto__ || Object.getPrototypeOf(JogApp)).call(this));
 
-	        _this.state = {
-	            activeTab: 'myJogs'
-	        };
 	        _this.handleClick = _this._handleClick.bind(_this);
+	        _this.getUserInfo = _this._getUserInfo.bind(_this);
+	        _this.submitLogoutForm = _this._submitLogoutForm.bind(_this);
+	        _this.handleLogout = _this._handleLogout.bind(_this);
 	        return _this;
 	    }
 
-	    _createClass(CommentSection, [{
+	    _createClass(JogApp, [{
 	        key: '_handleClick',
 	        value: function _handleClick(e) {
 	            var tab = e.target.getAttribute('data-id');
 	            this.setState({ activeTab: tab });
 	        }
 	    }, {
+	        key: '_getUserInfo',
+	        value: function _getUserInfo() {
+	            _jquery2.default.ajax({
+	                url: '/get-user-info/',
+	                dataType: 'json',
+	                cache: false,
+	                success: function (userInfo) {
+	                    this.setState(userInfo);
+	                }.bind(this),
+	                error: function (xhr, status, err) {
+	                    console.error(this.props.getUrl, status, err.toString());
+	                }.bind(this)
+	            });
+	        }
+	    }, {
+	        key: '_submitLogoutForm',
+	        value: function _submitLogoutForm(data) {
+	            data['csrfmiddlewaretoken'] = getCookie('csrftoken');
+	            console.log(data);
+	            _jquery2.default.ajax({
+	                url: '/rest-auth/logout/',
+	                dataType: 'json',
+	                type: 'POST',
+	                data: data,
+	                success: function (jogList) {
+	                    this.setState({});
+	                    this.getUserInfo();
+	                }.bind(this),
+	                error: function (xhr, status, err) {
+	                    _reactSAlert2.default.error('Please try again later', { position: 'bottom-left' });
+	                    console.error(this.props.postUrl, status, err.toString());
+	                }.bind(this)
+	            });
+	        }
+	    }, {
+	        key: '_handleLogout',
+	        value: function _handleLogout(e) {
+	            e.preventDefault();
+	            this.submitLogoutForm({});
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            this.getUserInfo();
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var getUrl = '/user-jogs/' + this.props.user_id + '/';
-	            var postUrl = '/jog/';
-	            return _react2.default.createElement(
-	                'div',
-	                { className: 'main-root-div' },
-	                _react2.default.createElement(
-	                    'nav',
-	                    { className: 'navigation' },
+	            if (!this.state) {
+	                return null;
+	            }
+	            if (!this.state.authenticated) {
+	                return _react2.default.createElement(
+	                    'div',
+	                    { className: 'main-root-div' },
 	                    _react2.default.createElement(
-	                        'section',
-	                        { className: 'container' },
+	                        'nav',
+	                        { className: 'navigation' },
 	                        _react2.default.createElement(
-	                            'a',
-	                            { className: 'navigation-title', href: '#' },
+	                            'section',
+	                            { className: 'container' },
+	                            _react2.default.createElement(
+	                                'a',
+	                                { className: 'navigation-title', href: '#' },
+	                                _react2.default.createElement(
+	                                    'h1',
+	                                    { className: 'title', 'data-id': 'myJogs', onClick: this.handleClick },
+	                                    'Jog Tracker'
+	                                )
+	                            )
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'header' },
+	                        _react2.default.createElement(
+	                            'section',
+	                            { className: 'header-container' },
 	                            _react2.default.createElement(
 	                                'h1',
-	                                { className: 'title' },
-	                                'Jog Tracker'
-	                            )
-	                        ),
-	                        _react2.default.createElement(
-	                            'ul',
-	                            { className: 'navigation-list float-right' },
+	                                null,
+	                                ' Hey there, Welcome to Jog Tracker!'
+	                            ),
 	                            _react2.default.createElement(
-	                                'li',
-	                                { className: 'navigation-item' },
+	                                'p',
+	                                null,
+	                                ' Helps you track your jogging activities and analyze stats '
+	                            )
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'register-login-form' },
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'register-form' },
+	                            _react2.default.createElement(
+	                                'h2',
+	                                null,
+	                                ' Register '
+	                            ),
+	                            _react2.default.createElement(_rest_auth.RegisterForm, { getUserInfo: this.getUserInfo })
+	                        ),
+	                        _react2.default.createElement('div', { className: 'vertical-line' }),
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'login-form' },
+	                            _react2.default.createElement(
+	                                'h2',
+	                                null,
+	                                ' Login '
+	                            ),
+	                            _react2.default.createElement(_rest_auth.LoginForm, { getUserInfo: this.getUserInfo })
+	                        )
+	                    ),
+	                    _react2.default.createElement(_reactSAlert2.default, { stack: { limit: 3 } })
+	                );
+	            } else {
+	                return _react2.default.createElement(
+	                    'div',
+	                    { className: 'main-root-div' },
+	                    _react2.default.createElement(
+	                        'nav',
+	                        { className: 'navigation' },
+	                        _react2.default.createElement(
+	                            'section',
+	                            { className: 'container' },
+	                            _react2.default.createElement(
+	                                'a',
+	                                { className: 'navigation-title', href: '#' },
 	                                _react2.default.createElement(
-	                                    'a',
-	                                    { className: 'navigation-link', href: '#', 'data-id': 'myJogs', onClick: this.handleClick },
-	                                    'My Jogs'
+	                                    'h1',
+	                                    { className: 'title', 'data-id': 'myJogs', onClick: this.handleClick },
+	                                    'Jog Tracker'
 	                                )
 	                            ),
 	                            _react2.default.createElement(
-	                                'li',
-	                                { className: 'navigation-item' },
+	                                'ul',
+	                                { className: 'navigation-list float-right' },
 	                                _react2.default.createElement(
-	                                    'a',
-	                                    { className: 'navigation-link', href: '#', 'data-id': 'manageUsers', onClick: this.handleClick },
-	                                    'Manage Users'
-	                                )
-	                            ),
-	                            _react2.default.createElement(
-	                                'li',
-	                                { className: 'navigation-item' },
+	                                    'li',
+	                                    { className: 'navigation-item' },
+	                                    _react2.default.createElement(
+	                                        'a',
+	                                        { className: 'navigation-link', href: '#', 'data-id': 'myJogs', onClick: this.handleClick },
+	                                        'My Jogs'
+	                                    )
+	                                ),
+	                                this.state.manageUsers && _react2.default.createElement(
+	                                    'li',
+	                                    { className: 'navigation-item' },
+	                                    _react2.default.createElement(
+	                                        'a',
+	                                        { className: 'navigation-link', href: '#', 'data-id': 'manageUsers', onClick: this.handleClick },
+	                                        'Manage Users'
+	                                    )
+	                                ),
+	                                this.state.manageApp && _react2.default.createElement(
+	                                    'li',
+	                                    { className: 'navigation-item' },
+	                                    _react2.default.createElement(
+	                                        'a',
+	                                        { className: 'navigation-link', href: '#', 'data-id': 'manageApp', onClick: this.handleClick },
+	                                        'Manage App Data'
+	                                    )
+	                                ),
 	                                _react2.default.createElement(
-	                                    'a',
-	                                    { className: 'navigation-link', href: '#', 'data-id': 'manageApp', onClick: this.handleClick },
-	                                    'Manage App Data'
+	                                    'li',
+	                                    { className: 'navigation-item' },
+	                                    _react2.default.createElement(
+	                                        'a',
+	                                        { className: 'navigation-link', href: '#', onClick: this.handleLogout },
+	                                        'Logout'
+	                                    )
 	                                )
 	                            )
 	                        )
-	                    )
-	                ),
-	                _react2.default.createElement(
-	                    'div',
-	                    { className: 'header' },
+	                    ),
 	                    _react2.default.createElement(
-	                        'section',
-	                        { className: 'header-container' },
+	                        'div',
+	                        { className: 'header' },
 	                        _react2.default.createElement(
-	                            'h1',
-	                            null,
-	                            ' Welcome to Jog Tracker!'
-	                        ),
-	                        _react2.default.createElement(
-	                            'p',
-	                            null,
-	                            ' Helps you track your jogging activities and analyze stats '
+	                            'section',
+	                            { className: 'header-container' },
+	                            _react2.default.createElement(
+	                                'h1',
+	                                null,
+	                                ' Hey ',
+	                                this.state.username,
+	                                ', Welcome to Jog Tracker!'
+	                            ),
+	                            _react2.default.createElement(
+	                                'p',
+	                                null,
+	                                ' Helps you track your jogging activities and analyze stats '
+	                            )
 	                        )
-	                    )
-	                ),
-	                this.state.activeTab === 'myJogs' && _react2.default.createElement(
-	                    'div',
-	                    { className: 'body' },
-	                    _react2.default.createElement(
+	                    ),
+	                    this.state.activeTab === 'myJogs' && _react2.default.createElement(
 	                        'div',
-	                        { className: 'jog-list' },
-	                        _react2.default.createElement(JogTable, { getUrl: getUrl, postUrl: postUrl, user_id: this.props.user_id })
-	                    )
-	                ),
-	                this.state.activeTab === 'manageUsers' && _react2.default.createElement(
-	                    'div',
-	                    { className: 'body' },
-	                    _react2.default.createElement(
+	                        { className: 'body' },
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'jog-list' },
+	                            _react2.default.createElement(JogTable, { getUrl: '/user-jogs/' + this.state.user_id + '/', postUrl: '/jog/', user_id: this.state.user_id })
+	                        )
+	                    ),
+	                    this.state.activeTab === 'manageUsers' && _react2.default.createElement(
 	                        'div',
-	                        { className: 'jog-list' },
-	                        'Watch this space for User Management'
-	                    )
-	                ),
-	                this.state.activeTab === 'manageApp' && _react2.default.createElement(
-	                    'div',
-	                    { className: 'body' },
-	                    _react2.default.createElement(
+	                        { className: 'body' },
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'jog-list' },
+	                            'Watch this space for User Management'
+	                        )
+	                    ),
+	                    this.state.activeTab === 'manageApp' && _react2.default.createElement(
 	                        'div',
-	                        { className: 'jog-list' },
-	                        'Watch this space for App Data Management'
-	                    )
-	                ),
-	                _react2.default.createElement(_reactSAlert2.default, { stack: { limit: 3 } })
-	            );
+	                        { className: 'body' },
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'jog-list' },
+	                            'Watch this space for App Data Management'
+	                        )
+	                    ),
+	                    _react2.default.createElement(_reactSAlert2.default, { stack: { limit: 3 } })
+	                );
+	            }
 	        }
 	    }]);
 
-	    return CommentSection;
+	    return JogApp;
 	}(_react2.default.Component);
 
 	var EditJogElement = function (_React$Component2) {
 	    _inherits(EditJogElement, _React$Component2);
+
+	    _createClass(EditJogElement, [{
+	        key: 'getMomentDate',
+	        value: function getMomentDate(timestamp) {
+	            // "Feb 17, 2017" to ["Feb 17", "2017"]
+	            var ts = timestamp.split(',');
+	            var year = parseInt(ts[1]);
+	            // "Feb 17" to ["Feb", "17"]
+	            ts = ts[0].split(' ');
+	            var month = ts[0];
+	            var date = parseInt(ts[1]);
+	            return (0, _moment2.default)().set({ 'year': year, 'month': month, 'date': date });
+	        }
+	    }]);
 
 	    function EditJogElement() {
 	        _classCallCheck(this, EditJogElement);
@@ -22260,7 +22401,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var jog_date = (0, _moment2.default)().set({ 'year': 2017, 'month': 1, 'date': 18 });
+	            var jog_date = this.getMomentDate(this.props.data.timestamp);
 	            return _react2.default.createElement(
 	                'i',
 	                { className: 'icon ion-edit', 'data-id': this.props.jog_id, onClick: this.handleClick },
@@ -22362,7 +22503,7 @@
 	    _createClass(JogTable, [{
 	        key: '_handleJogSubmit',
 	        value: function _handleJogSubmit(jog) {
-	            jog['csrfmiddlewaretoken'] = csrftoken;
+	            jog['csrfmiddlewaretoken'] = getCookie('csrftoken');
 	            console.log(jog);
 	            _jquery2.default.ajax({
 	                url: this.props.postUrl,
@@ -22388,7 +22529,7 @@
 	                dataType: 'json',
 	                type: 'DELETE',
 	                beforeSend: function (xhr) {
-	                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+	                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
 	                }.bind(this),
 	                success: function (jogList) {
 	                    _reactSAlert2.default.success('Jog entry deleted', { position: 'bottom-left' });
@@ -22410,7 +22551,7 @@
 	                type: 'PUT',
 	                data: jog,
 	                beforeSend: function (xhr) {
-	                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+	                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
 	                }.bind(this),
 	                success: function (jogList) {
 	                    _reactSAlert2.default.success('Jog entry updated', { position: 'bottom-left' });
@@ -22447,9 +22588,6 @@
 	        value: function render() {
 	            var _this5 = this;
 
-	            if (this.state.jogList.length === 0) {
-	                return null;
-	            }
 	            var jogList = this.state.jogList.map(function (jog) {
 	                return _react2.default.createElement(JogElement, {
 	                    key: jog.jog_id,
@@ -22511,6 +22649,11 @@
 	                        null,
 	                        jogList
 	                    )
+	                ),
+	                this.state.jogList.length === 0 && _react2.default.createElement(
+	                    'div',
+	                    { className: 'empty-table' },
+	                    ' Your list is empty. Start adding using the form above!'
 	                )
 	            );
 	        }
@@ -22547,7 +22690,6 @@
 	    _createClass(JogEntryForm, [{
 	        key: '_handleTimestampChange',
 	        value: function _handleTimestampChange(e) {
-	            console.log(e);
 	            this.setState({ timestamp: e });
 	        }
 	    }, {
@@ -74424,6 +74566,440 @@
 
 /***/ },
 /* 371 */
+/*!**********************!*\
+  !*** ./rest_auth.js ***!
+  \**********************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(/*! react */ 1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(/*! react-dom */ 32);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _jquery = __webpack_require__(/*! jquery */ 179);
+
+	var _jquery2 = _interopRequireDefault(_jquery);
+
+	var _reactSAlert = __webpack_require__(/*! react-s-alert */ 364);
+
+	var _reactSAlert2 = _interopRequireDefault(_reactSAlert);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	function getCookie(name) {
+	    var cookieValue = null;
+	    if (document.cookie && document.cookie != '') {
+	        var cookies = document.cookie.split(';');
+	        for (var i = 0; i < cookies.length; i++) {
+	            var cookie = _jquery2.default.trim(cookies[i]);
+	            // Does this cookie string begin with the name we want?
+	            if (cookie.substring(0, name.length + 1) == name + '=') {
+	                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+	                break;
+	            }
+	        }
+	    }
+	    return cookieValue;
+	}
+
+	var SignupModal = function (_React$Component) {
+	    _inherits(SignupModal, _React$Component);
+
+	    function SignupModal() {
+	        _classCallCheck(this, SignupModal);
+
+	        var _this = _possibleConstructorReturn(this, (SignupModal.__proto__ || Object.getPrototypeOf(SignupModal)).call(this));
+
+	        _this.state = {
+	            isShowingModal: false
+	        };
+	        _this.handleClick = _this._handleClick.bind(_this);
+	        _this.handleClose = _this._handleClose.bind(_this);
+	        return _this;
+	    }
+
+	    _createClass(SignupModal, [{
+	        key: '_handleClick',
+	        value: function _handleClick() {
+	            this.setState({ isShowingModal: true });
+	        }
+	    }, {
+	        key: '_handleClose',
+	        value: function _handleClose() {
+	            this.setState({ isShowingModal: false });
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var jog_date = this.getMomentDate(this.props.data.timestamp);
+	            return _react2.default.createElement(
+	                'a',
+	                { className: 'button', onClick: this.handleClick },
+	                this.state.isShowingModal && _react2.default.createElement(
+	                    ModalContainer,
+	                    null,
+	                    _react2.default.createElement(
+	                        ModalDialog,
+	                        null,
+	                        _react2.default.createElement(RegisterForm, {
+	                            closeModal: this.handleClose
+	                        })
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+
+	    return SignupModal;
+	}(_react2.default.Component);
+
+	var RegisterForm = function (_React$Component2) {
+	    _inherits(RegisterForm, _React$Component2);
+
+	    function RegisterForm(props) {
+	        _classCallCheck(this, RegisterForm);
+
+	        var _this2 = _possibleConstructorReturn(this, (RegisterForm.__proto__ || Object.getPrototypeOf(RegisterForm)).call(this, props));
+
+	        _this2.state = {
+	            email: '',
+	            username: '',
+	            password1: '',
+	            password2: ''
+	        };
+
+	        _this2.handleEmailChange = _this2._handleEmailChange.bind(_this2);
+	        _this2.handleUsernameChange = _this2._handleUsernameChange.bind(_this2);
+	        _this2.handlePassword1Change = _this2._handlePassword1Change.bind(_this2);
+	        _this2.handlePassword2Change = _this2._handlePassword2Change.bind(_this2);
+	        _this2.handleSubmit = _this2._handleSubmit.bind(_this2);
+	        _this2.submitRegisterForm = _this2._submitRegisterForm.bind(_this2);
+	        return _this2;
+	    }
+
+	    _createClass(RegisterForm, [{
+	        key: '_handleEmailChange',
+	        value: function _handleEmailChange(e) {
+	            this.setState({ email: e.target.value });
+	        }
+	    }, {
+	        key: '_handleUsernameChange',
+	        value: function _handleUsernameChange(e) {
+	            this.setState({ username: e.target.value });
+	        }
+	    }, {
+	        key: '_handlePassword1Change',
+	        value: function _handlePassword1Change(e) {
+	            this.setState({ password1: e.target.value });
+	        }
+	    }, {
+	        key: '_handlePassword2Change',
+	        value: function _handlePassword2Change(e) {
+	            this.setState({ password2: e.target.value });
+	        }
+	    }, {
+	        key: '_submitRegisterForm',
+	        value: function _submitRegisterForm(data) {
+	            data['csrfmiddlewaretoken'] = getCookie('csrftoken');
+	            console.log(data);
+	            _jquery2.default.ajax({
+	                url: '/rest-auth/registration/',
+	                dataType: 'json',
+	                type: 'POST',
+	                data: data,
+	                success: function (jogList) {
+	                    this.props.getUserInfo();
+	                }.bind(this),
+	                error: function (xhr, status, err) {
+	                    _reactSAlert2.default.error('Please try again later', { position: 'bottom-left' });
+	                    console.error(this.props.postUrl, status, err.toString());
+	                }.bind(this)
+	            });
+	        }
+	    }, {
+	        key: 'validateEmail',
+	        value: function validateEmail(email) {
+	            var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+	            return re.test(email);
+	        }
+	    }, {
+	        key: 'validatePassword',
+	        value: function validatePassword(password1, password2) {
+	            if (password1.length < 6) {
+	                _reactSAlert2.default.error('Please enter at least 6 characters in password', { position: 'bottom-left' });
+	                return false;
+	            }
+	            if (password1 !== password2) {
+	                _reactSAlert2.default.error('Password and Confirm Password should match', { position: 'bottom-left' });
+	                return false;
+	            }
+	            return true;
+	        }
+	    }, {
+	        key: '_handleSubmit',
+	        value: function _handleSubmit(e) {
+	            e.preventDefault();
+	            var email = this.state.email;
+	            var username = this.state.username;
+	            var password1 = this.state.password1;
+	            var password2 = this.state.password2;
+	            if (!email) {
+	                _reactSAlert2.default.error('Please enter email address', { position: 'bottom-left' });
+	                return;
+	            }
+	            if (!username) {
+	                _reactSAlert2.default.error('Please enter username', { position: 'bottom-left' });
+	                return;
+	            }
+	            if (!this.validateEmail(email)) {
+	                _reactSAlert2.default.error('Please enter a valid email address', { position: 'bottom-left' });
+	                return;
+	            }
+	            if (!password1) {
+	                _reactSAlert2.default.error('Please enter password', { position: 'bottom-left' });
+	                return;
+	            }
+	            if (!password2) {
+	                _reactSAlert2.default.error('Please enter confirm password', { position: 'bottom-left' });
+	                return;
+	            }
+	            if (!this.validatePassword(password1, password2)) {
+	                return;
+	            }
+	            this.submitRegisterForm({ email: email, username: username, password1: password1, password2: password2 });
+	            this.setState({ email: '', username: '', password1: '', password2: '' });
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return _react2.default.createElement(
+	                'form',
+	                { className: 'signup-form', onSubmit: this.state.editing ? this.handleEditSubmit : this.handleSubmit },
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'input-field' },
+	                    _react2.default.createElement(
+	                        'label',
+	                        null,
+	                        ' Email '
+	                    ),
+	                    _react2.default.createElement('input', {
+	                        type: 'text',
+	                        placeholder: 'Email',
+	                        value: this.state.email,
+	                        onChange: this.handleEmailChange
+	                    })
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'input-field' },
+	                    _react2.default.createElement(
+	                        'label',
+	                        null,
+	                        ' Username '
+	                    ),
+	                    _react2.default.createElement('input', {
+	                        type: 'text',
+	                        placeholder: 'Username',
+	                        value: this.state.username,
+	                        onChange: this.handleUsernameChange
+	                    })
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'input-field-100' },
+	                    _react2.default.createElement(
+	                        'label',
+	                        null,
+	                        ' Password '
+	                    ),
+	                    _react2.default.createElement('input', {
+	                        type: 'password',
+	                        placeholder: 'Password',
+	                        value: this.state.password1,
+	                        onChange: this.handlePassword1Change
+	                    })
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'input-field-100' },
+	                    _react2.default.createElement(
+	                        'label',
+	                        null,
+	                        ' Confirm Password '
+	                    ),
+	                    _react2.default.createElement('input', {
+	                        type: 'password',
+	                        placeholder: 'Confirm Password',
+	                        value: this.state.password2,
+	                        onChange: this.handlePassword2Change
+	                    })
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    null,
+	                    ' ',
+	                    _react2.default.createElement('input', { type: 'submit', value: 'Register' }),
+	                    ' ',
+	                    this.props.closeModal && _react2.default.createElement(
+	                        'a',
+	                        { onClick: this.props.closeModal },
+	                        ' Cancel '
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+
+	    return RegisterForm;
+	}(_react2.default.Component);
+
+	var LoginForm = function (_React$Component3) {
+	    _inherits(LoginForm, _React$Component3);
+
+	    function LoginForm(props) {
+	        _classCallCheck(this, LoginForm);
+
+	        var _this3 = _possibleConstructorReturn(this, (LoginForm.__proto__ || Object.getPrototypeOf(LoginForm)).call(this, props));
+
+	        _this3.state = {
+	            username: '',
+	            password: ''
+	        };
+
+	        _this3.handleUsernameChange = _this3._handleUsernameChange.bind(_this3);
+	        _this3.handlePasswordChange = _this3._handlePasswordChange.bind(_this3);
+	        _this3.handleSubmit = _this3._handleSubmit.bind(_this3);
+	        _this3.submitLoginForm = _this3._submitLoginForm.bind(_this3);
+	        return _this3;
+	    }
+
+	    _createClass(LoginForm, [{
+	        key: '_handleUsernameChange',
+	        value: function _handleUsernameChange(e) {
+	            this.setState({ username: e.target.value });
+	        }
+	    }, {
+	        key: '_handlePasswordChange',
+	        value: function _handlePasswordChange(e) {
+	            this.setState({ password: e.target.value });
+	        }
+	    }, {
+	        key: '_submitLoginForm',
+	        value: function _submitLoginForm(data) {
+	            data['csrfmiddlewaretoken'] = getCookie('csrftoken');
+	            console.log(data);
+	            _jquery2.default.ajax({
+	                url: '/rest-auth/login/',
+	                dataType: 'json',
+	                type: 'POST',
+	                data: data,
+	                success: function (jogList) {
+	                    this.props.getUserInfo();
+	                }.bind(this),
+	                error: function (xhr, status, err) {
+	                    _reactSAlert2.default.error('Please try again later', { position: 'bottom-left' });
+	                    console.error(this.props.postUrl, status, err.toString());
+	                }.bind(this)
+	            });
+	        }
+	    }, {
+	        key: '_handleSubmit',
+	        value: function _handleSubmit(e) {
+	            e.preventDefault();
+
+	            var username = this.state.username;
+	            var password = this.state.password;
+
+	            if (!username) {
+	                _reactSAlert2.default.error('Please enter username', { position: 'bottom-left' });
+	                return;
+	            }
+
+	            if (!password) {
+	                _reactSAlert2.default.error('Please enter password', { position: 'bottom-left' });
+	                return;
+	            }
+
+	            this.submitLoginForm({ username: username, password: password });
+	            this.setState({ username: '', password: '' });
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return _react2.default.createElement(
+	                'form',
+	                { className: 'signup-form', onSubmit: this.state.editing ? this.handleEditSubmit : this.handleSubmit },
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'input-field' },
+	                    _react2.default.createElement(
+	                        'label',
+	                        null,
+	                        ' Username '
+	                    ),
+	                    _react2.default.createElement('input', {
+	                        type: 'text',
+	                        placeholder: 'Username',
+	                        value: this.state.username,
+	                        onChange: this.handleUsernameChange
+	                    })
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'input-field-100' },
+	                    _react2.default.createElement(
+	                        'label',
+	                        null,
+	                        ' Password '
+	                    ),
+	                    _react2.default.createElement('input', {
+	                        type: 'password',
+	                        placeholder: 'Password',
+	                        value: this.state.password,
+	                        onChange: this.handlePasswordChange
+	                    })
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    null,
+	                    ' ',
+	                    _react2.default.createElement('input', { type: 'submit', value: 'Login' }),
+	                    ' ',
+	                    this.props.closeModal && _react2.default.createElement(
+	                        'a',
+	                        { onClick: this.props.closeModal },
+	                        ' Cancel '
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+
+	    return LoginForm;
+	}(_react2.default.Component);
+
+	module.exports = {
+	    RegisterForm: RegisterForm,
+	    SignupModal: SignupModal,
+	    LoginForm: LoginForm
+	};
+
+/***/ },
+/* 372 */
 /*!***************************************************!*\
   !*** ../~/react-s-alert/dist/s-alert-default.css ***!
   \***************************************************/
@@ -74432,10 +75008,10 @@
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(/*! !./../../css-loader!./s-alert-default.css */ 372);
+	var content = __webpack_require__(/*! !./../../css-loader!./s-alert-default.css */ 373);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(/*! ./../../style-loader/addStyles.js */ 374)(content, {});
+	var update = __webpack_require__(/*! ./../../style-loader/addStyles.js */ 375)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -74452,13 +75028,13 @@
 	}
 
 /***/ },
-/* 372 */
+/* 373 */
 /*!*******************************************************************!*\
   !*** ../~/css-loader!../~/react-s-alert/dist/s-alert-default.css ***!
   \*******************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(/*! ./../../css-loader/lib/css-base.js */ 373)();
+	exports = module.exports = __webpack_require__(/*! ./../../css-loader/lib/css-base.js */ 374)();
 	// imports
 
 
@@ -74469,7 +75045,7 @@
 
 
 /***/ },
-/* 373 */
+/* 374 */
 /*!***************************************!*\
   !*** ../~/css-loader/lib/css-base.js ***!
   \***************************************/
@@ -74528,7 +75104,7 @@
 
 
 /***/ },
-/* 374 */
+/* 375 */
 /*!**************************************!*\
   !*** ../~/style-loader/addStyles.js ***!
   \**************************************/

@@ -3,9 +3,10 @@ Views that render the page
 """
 import datetime
 
-from django.http import HttpResponse
 from django.http import Http404
+from django.http import HttpResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
 from jogapp.models import Jog
 from jogapp.serializers import JogSerializer
@@ -144,3 +145,28 @@ class UserJogs(APIView):
             data['average_speed'] = '%.1f kmph' % data['average_speed']
             jogs_list.append(data)
         return Response(jogs_list)
+
+@csrf_exempt
+def get_user_info(request):
+    """
+    Get the resources that this user has access to
+    """
+    user = request.user
+    if not user.is_authenticated():
+        data = {'authenticated': False}
+        return JSONResponse(data)
+
+    groups = user.groups.all()
+    data = {}
+    for group in groups:
+        if group.id == 1:
+            data['manageUsers'] = True
+        if group.id == 2:
+            data['manageUsers'] = True
+            data['manageApp'] = True
+
+    data['user_id'] = user.id
+    data['username'] = user.username
+    data['activeTab'] = 'myJogs'
+    data['authenticated'] = True
+    return JSONResponse(data)

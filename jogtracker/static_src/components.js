@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import InputRange from 'react-input-range';
 import {ModalContainer, ModalDialog} from 'react-modal-dialog';
 import Alert from 'react-s-alert';
+import {RegisterForm, LoginForm} from './rest_auth.js';
 
 import 'react-s-alert/dist/s-alert-default.css';
 
@@ -25,84 +26,175 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-var csrftoken = getCookie('csrftoken');
 
-export class CommentSection extends React.Component {
+export class JogApp extends React.Component {
 
     constructor() {
         super();
-
-        this.state = {
-            activeTab: 'myJogs',
-        };
         this.handleClick = this._handleClick.bind(this);
+        this.getUserInfo = this._getUserInfo.bind(this);
+        this.submitLogoutForm = this._submitLogoutForm.bind(this);
+        this.handleLogout = this._handleLogout.bind(this);
     }
     _handleClick(e) {
         let tab = e.target.getAttribute('data-id');
         this.setState({activeTab: tab});
     }
 
+    _getUserInfo() {
+        jQuery.ajax({
+            url: '/get-user-info/',
+            dataType: 'json',
+            cache: false,
+            success: function(userInfo) {
+                this.setState(userInfo);
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(this.props.getUrl, status, err.toString());
+            }.bind(this)
+        });
+    }
+
+    _submitLogoutForm(data) {
+        data['csrfmiddlewaretoken'] = getCookie('csrftoken');
+        console.log(data);
+        jQuery.ajax({
+            url: '/rest-auth/logout/',
+            dataType: 'json',
+            type: 'POST',
+            data: data,
+            success: function(jogList) {
+                this.setState({});
+                this.getUserInfo();
+            }.bind(this),
+            error: function(xhr, status, err) {
+                Alert.error('Please try again later', {position: 'bottom-left'});
+                console.error(this.props.postUrl, status, err.toString());
+            }.bind(this)
+        });
+    }
+
+    _handleLogout(e) {
+        e.preventDefault();
+        this.submitLogoutForm({});
+    }
+
+    componentDidMount() {
+        this.getUserInfo();
+    }
+
     render() {
-        let getUrl = `/user-jogs/${this.props.user_id}/`;
-        let postUrl = `/jog/`;
-        return (
-            <div className="main-root-div">
-                <nav className="navigation">
-                    <section className="container">
-                        <a className="navigation-title" href="#">
-                            <h1 className="title">Jog Tracker</h1>
-                        </a>
-                        <ul className="navigation-list float-right">
-                            <li className="navigation-item">
-                                <a className="navigation-link" href="#" data-id='myJogs' onClick={this.handleClick}>My Jogs</a>
-                            </li>
-                            <li className="navigation-item">
-                                <a className="navigation-link" href="#" data-id='manageUsers' onClick={this.handleClick}>Manage Users</a>
-                            </li>
-                            <li className="navigation-item">
-                                <a className="navigation-link" href="#" data-id='manageApp' onClick={this.handleClick}>Manage App Data</a>
-                            </li>
-                        </ul>
-                    </section>
-                </nav>
-                <div className="header">
-                    <section className="header-container">
-                        <h1> Welcome to Jog Tracker!</h1>
-                        <p> Helps you track your jogging activities and analyze stats </p>
-                    </section>
+        if(!this.state) {
+            return null;
+        }
+        if(!this.state.authenticated) {
+            return (
+                <div className="main-root-div">
+                    <nav className="navigation">
+                        <section className="container">
+                            <a className="navigation-title" href="#">
+                                <h1 className="title" data-id='myJogs' onClick={this.handleClick}>Jog Tracker</h1>
+                            </a>
+                        </section>
+                    </nav>
+                    <div className="header">
+                        <section className="header-container">
+                            <h1> Hey there, Welcome to Jog Tracker!</h1>
+                            <p> Helps you track your jogging activities and analyze stats </p>
+                        </section>
+                    </div>
+                    <div className="register-login-form">
+                        <div className="register-form">
+                            <h2> Register </h2>
+                            <RegisterForm getUserInfo={this.getUserInfo} />
+                        </div>
+                        <div className="vertical-line" />
+                        <div className="login-form">
+                            <h2> Login </h2>
+                            <LoginForm getUserInfo={this.getUserInfo} />
+                        </div>
+                    </div>
+                    <Alert stack={{limit: 3}} />
                 </div>
-                {
-                    this.state.activeTab === 'myJogs' &&
-                    <div className="body">
-                        <div className="jog-list">
-                            <JogTable getUrl={getUrl} postUrl={postUrl} user_id={this.props.user_id}/>
-                        </div>
+            );
+        } else {
+            return (
+                <div className="main-root-div">
+                    <nav className="navigation">
+                        <section className="container">
+                            <a className="navigation-title" href="#">
+                                <h1 className="title" data-id='myJogs' onClick={this.handleClick}>Jog Tracker</h1>
+                            </a>
+                            <ul className="navigation-list float-right">
+
+                                <li className="navigation-item">
+                                    <a className="navigation-link" href="#" data-id='myJogs' onClick={this.handleClick}>My Jogs</a>
+                                </li>
+                                { this.state.manageUsers &&
+                                <li className="navigation-item">
+                                    <a className="navigation-link" href="#" data-id='manageUsers' onClick={this.handleClick}>Manage Users</a>
+                                </li>
+                                }
+                                { this.state.manageApp &&
+                                <li className="navigation-item">
+                                    <a className="navigation-link" href="#" data-id='manageApp' onClick={this.handleClick}>Manage App Data</a>
+                                </li>
+                                }
+                                <li className="navigation-item">
+                                    <a className="navigation-link" href="#" onClick={this.handleLogout}>Logout</a>
+                                </li>
+                            </ul>
+                        </section>
+                    </nav>
+                    <div className="header">
+                        <section className="header-container">
+                            <h1> Hey {this.state.username}, Welcome to Jog Tracker!</h1>
+                            <p> Helps you track your jogging activities and analyze stats </p>
+                        </section>
                     </div>
-                }
-                {
-                    this.state.activeTab === 'manageUsers' &&
-                    <div className="body">
-                        <div className="jog-list">
-                            Watch this space for User Management
+                    {
+                        this.state.activeTab === 'myJogs' &&
+                        <div className="body">
+                            <div className="jog-list">
+                                <JogTable getUrl={`/user-jogs/${this.state.user_id}/`} postUrl={`/jog/`} user_id={this.state.user_id}/>
+                            </div>
                         </div>
-                    </div>
-                }
-                {
-                    this.state.activeTab === 'manageApp' &&
-                    <div className="body">
-                        <div className="jog-list">
-                            Watch this space for App Data Management
+                    }
+                    {
+                        this.state.activeTab === 'manageUsers' &&
+                        <div className="body">
+                            <div className="jog-list">
+                                Watch this space for User Management
+                            </div>
                         </div>
-                    </div>
-                }
-                <Alert stack={{limit: 3}} />
-            </div>
-        );
+                    }
+                    {
+                        this.state.activeTab === 'manageApp' &&
+                        <div className="body">
+                            <div className="jog-list">
+                                Watch this space for App Data Management
+                            </div>
+                        </div>
+                    }
+                    <Alert stack={{limit: 3}} />
+                </div>
+            );
+        }
     }
 }
 
 
 class EditJogElement extends React.Component {
+    getMomentDate(timestamp) {
+        // "Feb 17, 2017" to ["Feb 17", "2017"]
+        let ts = timestamp.split(',');
+        let year = parseInt(ts[1]);
+        // "Feb 17" to ["Feb", "17"]
+        ts = ts[0].split(' ')
+        let month = ts[0];
+        let date = parseInt(ts[1]);
+        return moment().set({'year': year, 'month': month, 'date': date});
+    }
     constructor() {
         super();
 
@@ -119,7 +211,7 @@ class EditJogElement extends React.Component {
         this.setState({isShowingModal: false});
     }
     render() {
-        let jog_date = moment().set({'year': 2017, 'month': 1, 'date': 18});
+        let jog_date = this.getMomentDate(this.props.data.timestamp);
         return (
             <i className="icon ion-edit" data-id={this.props.jog_id} onClick={this.handleClick}>
             {
@@ -181,7 +273,7 @@ class JogTable extends React.Component {
     }
 
     _handleJogSubmit(jog) {
-        jog['csrfmiddlewaretoken'] = csrftoken;
+        jog['csrfmiddlewaretoken'] = getCookie('csrftoken');
         console.log(jog);
         jQuery.ajax({
             url: this.props.postUrl,
@@ -206,7 +298,7 @@ class JogTable extends React.Component {
             dataType: 'json',
             type: 'DELETE',
             beforeSend: function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
             }.bind(this),
             success: function(jogList) {
                 Alert.success('Jog entry deleted', {position: 'bottom-left'});
@@ -227,7 +319,7 @@ class JogTable extends React.Component {
             type: 'PUT',
             data: jog,
             beforeSend: function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
             }.bind(this),
             success: function(jogList) {
                 Alert.success('Jog entry updated', {position: 'bottom-left'});
@@ -259,9 +351,6 @@ class JogTable extends React.Component {
     }
 
     render() {
-        if(this.state.jogList.length === 0) {
-            return null;
-        }
         let jogList = this.state.jogList.map((jog) => (
             <JogElement
                 key={jog.jog_id}
@@ -295,6 +384,7 @@ class JogTable extends React.Component {
                         {jogList}
                     </tbody>
                 </table>
+                {this.state.jogList.length === 0 && <div className="empty-table"> Your list is empty. Start adding using the form above!</div>}
             </div>
         );
     }
@@ -323,7 +413,6 @@ class JogEntryForm extends React.Component {
     }
 
     _handleTimestampChange(e) {
-        console.log(e);
         this.setState({timestamp: e});
     }
 

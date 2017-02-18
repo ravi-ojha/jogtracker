@@ -78,11 +78,12 @@ blockquote *:last-child {
   display: inline;
   font-size: 1.6rem;
   line-height: 5.2rem;
-  padding: 0;
+  padding: 15px;
   text-decoration: none
 }
-.navigation .navigation-link.active {
-  color: #606c76
+.navigation a:hover, a:active, a:focus {
+  border-bottom: 1px solid #3F51B5;
+  color: #3F51B5 !important;
 }
 .header {
   padding-top: 5rem
@@ -387,6 +388,11 @@ fieldset, input, select, textarea {
 }
 blockquote, dl, figure, form, ol, p, pre, table, ul {
   margin-bottom: 2.5rem;
+}
+.empty-table {
+  text-align: center;
+  padding: 2em;
+  font-size: 1.4em;
 }
 table {
   border-spacing: 0;
@@ -931,4 +937,30 @@ img {
 .icon:hover{
   color:#969696;
   cursor: pointer;
+}
+
+.register-login-form {
+
+}
+
+.register-login-form .register-form {
+  max-width: 25em;
+  min-width: 25em;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.register-login-form .login-form{
+  max-width: 25em;
+  min-width: 25em;
+  display: inline-block;
+  vertical-align: top;
+}
+
+div.vertical-line{
+  height: 30em;
+  width: 1px;
+  background-color: #eeeeee;
+  display:inline-block;
+  margin: 0em 3em;
 }
