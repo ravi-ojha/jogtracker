@@ -7,9 +7,10 @@ import InputRange from 'react-input-range';
 import {ModalContainer, ModalDialog} from 'react-modal-dialog';
 import Alert from 'react-s-alert';
 import {RegisterForm, LoginForm} from './rest_auth.js';
+import {SimpleSelect} from 'react-selectize';
 
 import 'react-s-alert/dist/s-alert-default.css';
-
+import 'react-selectize/themes/index.css'
 
 function getCookie(name) {
     var cookieValue = null;
@@ -156,7 +157,7 @@ export class JogApp extends React.Component {
                         this.state.activeTab === 'myJogs' &&
                         <div className="body">
                             <div className="jog-list">
-                                <JogTable getUrl={`/user-jogs/${this.state.user_id}/`} postUrl={`/jog/`} user_id={this.state.user_id}/>
+                                <JogTable getUrl={`/user-jogs/${this.state.user_id}/`} postUrl={`/jog/`} showUsername={false} user_id={this.state.user_id}/>
                             </div>
                         </div>
                     }
@@ -172,7 +173,7 @@ export class JogApp extends React.Component {
                         this.state.activeTab === 'manageApp' &&
                         <div className="body">
                             <div className="jog-list">
-                                Watch this space for App Data Management
+                                <JogTable getUrl={`/user-jogs/`} postUrl={`/jog/`} showUsername={true} />
                             </div>
                         </div>
                     }
@@ -241,6 +242,7 @@ class JogElement extends React.Component {
     render() {
         return (
             <tr>
+                {this.props.showUsername && <td>{this.props.data.username}</td>}
                 <td>{this.props.data.timestamp}</td>
                 <td>{this.props.data.distance_kms}</td>
                 <td>{this.props.data.duration_hrs}</td>
@@ -263,7 +265,7 @@ class JogTable extends React.Component {
         super();
 
         this.state = {
-            jogList: []
+            jogList: [],
         };
 
         this.loadJogsFromServer = this._loadJogsFromServer.bind(this);
@@ -354,6 +356,7 @@ class JogTable extends React.Component {
         let jogList = this.state.jogList.map((jog) => (
             <JogElement
                 key={jog.jog_id}
+                showUsername={this.props.showUsername}
                 jogDelete={this.handleJogDelete}
                 onJogEditSubmit={this.handleJogEditSubmit}
                 data={jog}
@@ -363,9 +366,11 @@ class JogTable extends React.Component {
             <div className="jog-list-and-form">
                 <JogEntryForm
                     edit={false}
+                    showUsername={this.props.showUsername}
                     onJogSubmit={this.handleJogSubmit}
                     onJogEditSubmit={this.handleJogEditSubmit}
                     user_id={this.props.user_id}
+                    username=''
                     timestamp={moment()}
                     distance=''
                     duration={30}
@@ -373,6 +378,7 @@ class JogTable extends React.Component {
                 <table>
                     <thead>
                         <tr>
+                            {this.props.showUsername && <th>Username</th>}
                             <th>Date</th>
                             <th>Distance</th>
                             <th>Duration</th>
@@ -399,17 +405,51 @@ class JogEntryForm extends React.Component {
         this.state = {
             editing: this.props.edit,
             user_id: this.props.user_id,
+            username: this.props.username,
             timestamp: this.props.timestamp,
             distance: this.props.distance,
             duration: this.props.duration
         };
 
+        this.getUserList = this._getUserList.bind(this);
+        this.handleUsernameChange = this._handleUsernameChange.bind(this);
         this.handleTimestampChange = this._handleTimestampChange.bind(this);
         this.handleDistanceChange = this._handleDistanceChange.bind(this);
         this.handleDurationChange = this._handleDurationChange.bind(this);
         this.handleSubmit = this._handleSubmit.bind(this);
         this.handleEditSubmit = this._handleEditSubmit.bind(this);
         this.formatDurationLabel = this._formatDurationLabel.bind(this);
+    }
+
+    _getUserList() {
+        jQuery.ajax({
+            url: '/get-user-list/',
+            dataType: 'json',
+            cache: false,
+            success: function(userData) {
+                let userList = Object.keys(userData).map(function(key){
+                    return userData[key];
+                });
+                let usernameToID = {};
+                for (let key in userData){
+                    usernameToID[userData[key]] = key;
+                }
+                this.setState({userList, userData, usernameToID});
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(this.props.getUrl, status, err.toString());
+            }.bind(this)
+        });
+    }
+
+    componentDidMount() {
+        this.getUserList();
+    }
+
+    _handleUsernameChange(e) {
+        let selected_username = e.value;
+        let user_id = this.state.usernameToID[selected_username];
+        this.setState({username: selected_username, user_id: user_id});
     }
 
     _handleTimestampChange(e) {
@@ -483,8 +523,24 @@ class JogEntryForm extends React.Component {
     }
 
     render() {
+        if(this.state.userList === undefined) { // Don't do !this.state.userList because userList can be empty
+            return null;
+        }
+        let options = this.state.userList.map(function(uname) {
+            return {label: uname, value: uname}
+        });
         return (
             <form className="jog-form" onSubmit={this.state.editing ? this.handleEditSubmit : this.handleSubmit}>
+                {this.props.showUsername &&
+                <div className="input-field">
+                    <label> Username </label>
+                    <SimpleSelect
+                        options={options}
+                        onValueChange={this.handleUsernameChange}
+                        placeholder="Select a user">
+                    </SimpleSelect>
+                </div>
+                }
                 <div className="input-field">
                     <label> Jogging Date </label>
                     <DatePicker

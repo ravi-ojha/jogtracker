@@ -3,6 +3,7 @@ Views that render the page
 """
 import datetime
 
+from django.contrib.auth.models import User
 from django.http import Http404
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -105,12 +106,15 @@ class UserJogs(APIView):
     """
     Retrieve multiple instances of jogs for a user
     """
-    def get_user_jogs(self, user_id):
-        return Jog.objects.filter(user_id=user_id).order_by('-timestamp')
+    def get_all_user_jogs(self):
+        return Jog.objects.all().select_related('user').order_by('-timestamp')
 
-    def get(self, request, user_id, format=None):
+    def get_user_jogs(self, user_id):
+        return Jog.objects.filter(user_id=user_id).select_related('user').order_by('-timestamp')
+
+    def get(self, request, user_id=None, format=None):
         """
-        Returns a json dictionary for jog instance
+        Returns a list
 
         If jog instances are found then
         [
@@ -132,12 +136,16 @@ class UserJogs(APIView):
         []
 
         """
-        jogs = self.get_user_jogs(user_id)
+        if user_id:
+            jogs = self.get_user_jogs(user_id)
+        else:
+            jogs = self.get_all_user_jogs()
         jogs_list = []
         for jog in jogs:
             serializer = JogSerializer(jog)
             data = serializer.data
             data['jog_id'] = jog.id
+            data['username'] = jog.user.username
             data['duration_hrs'] = str(datetime.timedelta(seconds=data['duration']))
             data['distance_kms'] = data['distance']/float(1000)
             data['average_speed'] = data['distance_kms']/(data['duration']/float(3600))
@@ -169,4 +177,16 @@ def get_user_info(request):
     data['username'] = user.username
     data['activeTab'] = 'myJogs'
     data['authenticated'] = True
+    return JSONResponse(data)
+
+
+@csrf_exempt
+def get_user_list(request):
+    """
+    Get the list of usernames
+    """
+    users = User.objects.all()
+    data = {}
+    for u in users:
+        data[u.id] = u.username
     return JSONResponse(data)
