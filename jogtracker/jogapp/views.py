@@ -166,6 +166,8 @@ def get_user_info(request):
 
     groups = user.groups.all()
     data = {}
+    data['manageUsers'] = False
+    data['manageApp'] = False
     for group in groups:
         if group.id == 1:
             data['manageUsers'] = True
@@ -183,10 +185,67 @@ def get_user_info(request):
 @csrf_exempt
 def get_user_list(request):
     """
-    Get the list of usernames
+    Returns a dict of user_id mapped to user date
+
+    {
+        user_id_1: {
+            'username': u.username,
+            'email': u.email,
+            'date_joined': u.date_joined
+        }
+        .
+        .
+        .
+        user_id_n: {
+            'username': u.username,
+            'email': u.email,
+            'date_joined': u.date_joined
+        }
+    }
     """
     users = User.objects.all()
     data = {}
     for u in users:
-        data[u.id] = u.username
+        data[u.id] = {
+            'username': u.username,
+            'email': u.email,
+            'date_joined': u.date_joined
+        }
+    return JSONResponse(data)
+
+
+@csrf_exempt
+def delete_user(request, user_id):
+    """
+    Deletes the user object associated with user_id
+    """
+    data = {}
+    user = User.objects.filter(id=user_id)
+    if user:
+        user.delete()
+        data['success'] = True
+        data['message'] = 'User was deleted successfully'
+    else:
+        data['success'] = False
+        data['message'] = 'No such user exists'
+    return JSONResponse(data)
+
+
+@csrf_exempt
+def update_user(request, user_id):
+    """
+    Updates the user object associated with user_id using the data in PUT request
+    """
+    username = request.POST.get('username')
+    email = request.POST.get('email')
+
+    data = {}
+    user = User.objects.filter(id=user_id)
+    if user:
+        user.update(username=username, email=email)
+        data['success'] = True
+        data['message'] = 'User was updated successfully'
+    else:
+        data['success'] = False
+        data['message'] = 'No such user exists'
     return JSONResponse(data)

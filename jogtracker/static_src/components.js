@@ -6,7 +6,7 @@ import DatePicker from 'react-datepicker';
 import InputRange from 'react-input-range';
 import {ModalContainer, ModalDialog} from 'react-modal-dialog';
 import Alert from 'react-s-alert';
-import {RegisterForm, LoginForm} from './rest_auth.js';
+import {RegisterForm, LoginForm, UserTable} from './rest_auth.js';
 import {SimpleSelect} from 'react-selectize';
 
 import 'react-s-alert/dist/s-alert-default.css';
@@ -32,6 +32,7 @@ export class JogApp extends React.Component {
 
     constructor() {
         super();
+        this.state = {};
         this.handleClick = this._handleClick.bind(this);
         this.getUserInfo = this._getUserInfo.bind(this);
         this.submitLogoutForm = this._submitLogoutForm.bind(this);
@@ -51,7 +52,7 @@ export class JogApp extends React.Component {
                 this.setState(userInfo);
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error(this.props.getUrl, status, err.toString());
+                console.error('/get-user-info/', status, err.toString());
             }.bind(this)
         });
     }
@@ -59,18 +60,18 @@ export class JogApp extends React.Component {
     _submitLogoutForm(data) {
         data['csrfmiddlewaretoken'] = getCookie('csrftoken');
         console.log(data);
+        this.setState({});
         jQuery.ajax({
             url: '/rest-auth/logout/',
             dataType: 'json',
             type: 'POST',
             data: data,
             success: function(jogList) {
-                this.setState({});
                 this.getUserInfo();
             }.bind(this),
             error: function(xhr, status, err) {
                 Alert.error('Please try again later', {position: 'bottom-left'});
-                console.error(this.props.postUrl, status, err.toString());
+                console.error('/rest-auth/logout/', status, err.toString());
             }.bind(this)
         });
     }
@@ -165,7 +166,7 @@ export class JogApp extends React.Component {
                         this.state.activeTab === 'manageUsers' &&
                         <div className="body">
                             <div className="jog-list">
-                                Watch this space for User Management
+                                <UserTable />
                             </div>
                         </div>
                     }
@@ -428,11 +429,11 @@ class JogEntryForm extends React.Component {
             cache: false,
             success: function(userData) {
                 let userList = Object.keys(userData).map(function(key){
-                    return userData[key];
+                    return userData[key].username;
                 });
                 let usernameToID = {};
                 for (let key in userData){
-                    usernameToID[userData[key]] = key;
+                    usernameToID[userData[key].username] = key;
                 }
                 this.setState({userList, userData, usernameToID});
             }.bind(this),
