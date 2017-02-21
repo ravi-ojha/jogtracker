@@ -260,6 +260,77 @@ class JogElement extends React.Component {
     }
 }
 
+class JogFilter extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            user_id: this.props.user_id,
+            from_date: '',
+            to_date: '',
+        };
+
+        this.handleFromDateChange = this._handleFromDateChange.bind(this);
+        this.handleToDateChange = this._handleToDateChange.bind(this);
+        this.handleFilterSubmit = this._handleFilterSubmit.bind(this);
+    }
+
+    _handleFromDateChange(e) {
+        this.setState({from_date: e});
+    }
+
+    _handleToDateChange(e) {
+        this.setState({to_date: e});
+    }
+
+    _handleFilterSubmit(e) {
+        e.preventDefault();
+        let user_id = this.state.user_id;
+        let from_date_obj = this.state.from_date;
+        let to_date_obj = this.state.to_date;
+        if(!this.state.from_date) {
+            Alert.error('Please enter From Date', {position: 'bottom-left'});
+            return;
+        }
+        if(!this.state.to_date) {
+            Alert.error('Please enter To Date', {position: 'bottom-left'});
+            return;
+        }
+        if (from_date_obj > to_date_obj) {
+            Alert.error('From Date cannot be after To Date', {position: 'bottom-left'});
+            return;
+        }
+        let from_date = `${from_date_obj.get('year')}-${from_date_obj.get('month')+1}-${from_date_obj.get('date')}`;
+        let to_date = `${to_date_obj.get('year')}-${to_date_obj.get('month')+1}-${to_date_obj.get('date')}`;
+        this.props.filterJogs({user_id, from_date, to_date});
+    }
+
+    render() {
+        return (
+            <form className="jog-form" onSubmit={this.handleFilterSubmit}>
+                <div className="input-field">
+                    <label> From Date </label>
+                    <DatePicker
+                        dateFormat='MMMM D, YYYY'
+                        selected={this.state.from_date}
+                        onChange={this.handleFromDateChange}
+                    />
+                </div>
+                <div className="input-field">
+                    <label> To Date </label>
+                    <DatePicker
+                        dateFormat='MMMM D, YYYY'
+                        selected={this.state.to_date}
+                        onChange={this.handleToDateChange}
+                    />
+                </div>
+                <input type="submit" value="Filter" />
+            </form>
+        );
+    }
+}
+
 class JogTable extends React.Component {
 
     constructor() {
@@ -270,6 +341,7 @@ class JogTable extends React.Component {
         };
 
         this.loadJogsFromServer = this._loadJogsFromServer.bind(this);
+        this.filterJogs = this._filterJogs.bind(this);
         this.handleJogSubmit = this._handleJogSubmit.bind(this);
         this.handleJogDelete = this._handleJogDelete.bind(this);
         this.handleJogEditSubmit = this._handleJogEditSubmit.bind(this);
@@ -341,7 +413,24 @@ class JogTable extends React.Component {
             dataType: 'json',
             cache: false,
             success: function(jogList) {
-                this.setState({jogList});
+                this.setState(jogList);
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(this.props.getUrl, status, err.toString());
+            }.bind(this)
+        });
+    }
+
+    _filterJogs(data) {
+        data['csrfmiddlewaretoken'] = getCookie('csrftoken');
+        jQuery.ajax({
+            url: this.props.getUrl,
+            dataType: 'json',
+            type: 'POST',
+            data: data,
+            cache: false,
+            success: function(jogList) {
+                this.setState(jogList);
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(this.props.getUrl, status, err.toString());
@@ -376,6 +465,7 @@ class JogTable extends React.Component {
                     distance=''
                     duration={30}
                 />
+                <JogFilter filterJogs={this.filterJogs} />
                 <table>
                     <thead>
                         <tr>
@@ -391,7 +481,11 @@ class JogTable extends React.Component {
                         {jogList}
                     </tbody>
                 </table>
-                {this.state.jogList.length === 0 && <div className="empty-table"> Your list is empty. Start adding using the form above!</div>}
+                {this.state.jogList.length === 0 ?
+                    <div className="empty-table"> Your list is empty. Start adding using the form above!</div>
+                    :
+                    <div className="empty-table"> Total Distance: <b>{this.state.totalDistance}</b>, Time Taken: <b>{this.state.totalTimeTaken}</b>, Average Speed: <b>{this.state.overallAverageSpeed}</b></div>
+                }
             </div>
         );
     }
@@ -438,7 +532,7 @@ class JogEntryForm extends React.Component {
                 this.setState({userList, userData, usernameToID});
             }.bind(this),
             error: function(xhr, status, err) {
-                console.error(this.props.getUrl, status, err.toString());
+                console.error('/get-user-list/', status, err.toString());
             }.bind(this)
         });
     }
