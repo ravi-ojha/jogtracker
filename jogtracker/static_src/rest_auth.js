@@ -179,14 +179,6 @@ class RegisterForm extends React.Component {
         if (!this.validatePassword(password1, password2)) {
             return;
         }
-        if(this.state.userList.indexOf(username) >= 0) {
-            Alert.error('That username is already taken', {position: 'bottom-left'});
-            return;
-        }
-        if(this.state.emailList.indexOf(email) >= 0) {
-            Alert.error('That email is already registered', {position: 'bottom-left'});
-            return;
-        }
         this.submitRegisterForm({email, username, password1, password2});
         this.setState({email: '', username: '', password1: '', password2: ''});
     }

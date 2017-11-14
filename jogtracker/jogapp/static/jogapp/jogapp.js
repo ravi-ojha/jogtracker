@@ -75020,14 +75020,6 @@
 	            if (!this.validatePassword(password1, password2)) {
 	                return;
 	            }
-	            if (this.state.userList.indexOf(username) >= 0) {
-	                _reactSAlert2.default.error('That username is already taken', { position: 'bottom-left' });
-	                return;
-	            }
-	            if (this.state.emailList.indexOf(email) >= 0) {
-	                _reactSAlert2.default.error('That email is already registered', { position: 'bottom-left' });
-	                return;
-	            }
 	            this.submitRegisterForm({ email: email, username: username, password1: password1, password2: password2 });
 	            this.setState({ email: '', username: '', password1: '', password2: '' });
 	        }

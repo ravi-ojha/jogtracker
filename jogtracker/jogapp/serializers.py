@@ -13,8 +13,8 @@ class JogSerializer(serializers.Serializer):
     """
     user_id = serializers.IntegerField()
     timestamp = serializers.DateTimeField(format='%b %d, %Y')
-    duration = serializers.IntegerField()
-    distance = serializers.IntegerField()
+    duration = serializers.IntegerField(min_value=0)
+    distance = serializers.IntegerField(min_value=0)
 
     def create(self, validated_data):
         """
